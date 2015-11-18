@@ -102,31 +102,52 @@ func main() {
 		SyncRetryClock: clock.NewClock(),
 		EncryptKeys:    encryptionKeys,
 		SSLDisabled:    false,
-		Logger:         nil,
+		Logger:         stdout,
 	}
 
-	err = controller.BootAgent()
-	if err != nil {
-		stderr.Printf("error booting consul agent: %s", err)
-		os.Exit(1)
+	if command == "start" {
+		err = controller.BootAgent()
+		if err != nil {
+			stderr.Printf("error booting consul agent: %s", err)
+			os.Exit(1)
+		}
+
+		if !isServer {
+			return
+		}
+		rpcClient, err := agent.NewRPCClient("localhost:8400")
+		if err != nil {
+			stderr.Printf("error connecting to RPC server: %s", err)
+			os.Exit(1)
+		}
+		agentClient.ConsulRPCClient = &confab.RPCClient{
+			*rpcClient,
+		}
+
+		err = controller.ConfigureServer()
+		if err != nil {
+			stderr.Printf("error connecting to RPC server: %s", err)
+			os.Exit(1) // not tested; it is challenging with the current fake agent.
+		}
 	}
 
-	if !isServer {
-		return
-	}
-	rpcClient, err := agent.NewRPCClient("localhost:8400")
-	if err != nil {
-		stderr.Printf("error connecting to RPC server: %s", err)
-		os.Exit(1)
-	}
-	agentClient.ConsulRPCClient = &confab.RPCClient{
-		*rpcClient,
-	}
+	if command == "stop" {
+		rpcClient, err := agent.NewRPCClient("localhost:8400")
+		if err != nil {
+			stderr.Printf("error connecting to RPC server: %s", err)
+			os.Exit(1)
+		}
+		agentClient.ConsulRPCClient = &confab.RPCClient{
+			*rpcClient,
+		}
 
-	err = controller.ConfigureServer()
-	if err != nil {
-		stderr.Printf("error connecting to RPC server: %s", err)
-		os.Exit(1) // not tested; it is challenging with the current fake agent.
+		stdout.Printf("MAIN: stopping agent")
+		err = controller.StopAgent()
+		if err != nil {
+			stderr.Printf("error stopping agent: %s", err)
+			os.Exit(1)
+		}
+		stdout.Printf("MAIN: stopped agent")
 	}
 }
 

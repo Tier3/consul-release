@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"syscall"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -144,6 +145,69 @@ var _ = Describe("confab", func() {
 
 				Expect(session.Out).To(gbytes.Say("UseKey called"))
 			})
+		})
+	})
+
+	FContext("when stopping", func() {
+
+		BeforeEach(func() {
+			options := []byte(`{ "RunServer": true, "Members": ["member-1", "member-2", "member-3"], "WaitForHUP": true }`)
+			Expect(ioutil.WriteFile(filepath.Join(consulConfigDir, "options.json"), options, 0600)).To(Succeed())
+		})
+
+		It("stops the consul agent", func() {
+			cmd := exec.Command(pathToConfab,
+				"start",
+				"--server=true",
+				"--pid-file", pidFile.Name(),
+				"--agent-path", pathToFakeAgent,
+				"--consul-config-dir", consulConfigDir,
+				"--expected-member", "member-1",
+				"--expected-member", "member-2",
+				"--expected-member", "member-3",
+			)
+			serverSession, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+
+			time.Sleep(15 * time.Second)
+
+			cmd = exec.Command(pathToConfab,
+				"stop",
+				"--pid-file", pidFile.Name(),
+				"--agent-path", pathToFakeAgent,
+				"--consul-config-dir", consulConfigDir,
+				"--expected-member", "member-1",
+				"--expected-member", "member-2",
+				"--expected-member", "member-3",
+			)
+
+			stopSession, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(stopSession, "5s").Should(gexec.Exit(0))
+			Eventually(serverSession, "5s").Should(gexec.Exit(0))
+
+			pidFileContents, err := ioutil.ReadFile(pidFile.Name())
+			Expect(err).NotTo(HaveOccurred())
+
+			pid, err := strconv.Atoi(string(pidFileContents))
+			Expect(err).NotTo(HaveOccurred())
+
+			fakeOutput, err := ioutil.ReadFile(filepath.Join(consulConfigDir, "fake-output.json"))
+			Expect(err).NotTo(HaveOccurred())
+
+			var decodedFakeOutput map[string]interface{}
+			err = json.Unmarshal(fakeOutput, &decodedFakeOutput)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(decodedFakeOutput).To(Equal(map[string]interface{}{
+				"PID": float64(pid),
+				"Args": []interface{}{
+					"agent",
+					fmt.Sprintf("-config-dir=%s", consulConfigDir),
+				},
+			}))
+
+			Expect(serverSession.Out).To(gbytes.Say("Leave called"))
 		})
 	})
 

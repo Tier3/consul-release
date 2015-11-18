@@ -208,6 +208,20 @@ func (sl ServerListener) Serve() {
 				time.Sleep(1 * time.Second)
 			}
 		}()
+
+		go func() {
+			var leaveCalled bool
+			for {
+				if mockAgent.LeaveCallCount() > 0 && !leaveCalled {
+					fmt.Println("Leave called")
+					leaveCalled = true
+					triggerClose <- struct{}{}
+					triggerClose <- struct{}{}
+				}
+
+				time.Sleep(1 * time.Second)
+			}
+		}()
 	}
 
 	<-triggerClose
