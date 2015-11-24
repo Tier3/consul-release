@@ -66,6 +66,12 @@
     "protocol" => p("consul.agent.protocol_version"),
 }
 
+recursors = p("consul.agent.recursors")
+
+if !recursors.nil? && recursors.any?
+  config["recursors"] = recursors
+end
+
 if p("consul.require_ssl")
   certs_dir = "/var/vcap/jobs/consul_agent/config/certs"
   if server

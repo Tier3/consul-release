@@ -1,0 +1,30 @@
+---
+packages:
+- name: consul
+  version: !binary |-
+    MTRiODMzNzhiMzBhMmI1NWEyNWU2NDFlODM1YWYzZTVjODdhMGQ0MQ==
+  fingerprint: !binary |-
+    MTRiODMzNzhiMzBhMmI1NWEyNWU2NDFlODM1YWYzZTVjODdhMGQ0MQ==
+  sha1: !binary |-
+    ZjhhNzFhMzcxZWYyNTQ5MDNmNmJkZDY4MjQyMmMyNGEzZmZhNWJhYw==
+  dependencies: []
+- name: consul-common
+  version: !binary |-
+    ZmZhYjlhZTdiZWE4YTA1M2FhY2NhODgxNjY4MWUyNDFiMGZhYjMwYg==
+  fingerprint: !binary |-
+    ZmZhYjlhZTdiZWE4YTA1M2FhY2NhODgxNjY4MWUyNDFiMGZhYjMwYg==
+  sha1: !binary |-
+    OTFhNzZiYzVhNjI2MWE1M2UxMTM1NWYwZmNkY2IyZWM0ZjIzNDBmYQ==
+  dependencies: []
+jobs:
+- name: consul_agent
+  version: !binary |-
+    YTBhN2M3ZmY3MGFlN2NlMTU0NWQ2NDZjY2YwNTYzYzExODUwZGZlZQ==
+  fingerprint: !binary |-
+    YTBhN2M3ZmY3MGFlN2NlMTU0NWQ2NDZjY2YwNTYzYzExODUwZGZlZQ==
+  sha1: !binary |-
+    NzY5MDYyMzJmNDU3YjI3NGZmYmZhMGZhZjhmNDU5NzdhNmI5NTE4Yw==
+commit_hash: d9036dd1
+uncommitted_changes: true
+name: clc-consul
+version: '1'
